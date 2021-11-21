@@ -9,11 +9,7 @@ URL = 'https://jsonplaceholder.typicode.com'
 
 
 def get_data(url: str = '') -> requests.Response:
-    try:
-        r = requests.get(url)
-        return r
-    except Exception as ex:
-        print(f'{ex}: Неизвестная ошибка загрузки.')
+    r = requests.get(url)
 
 
 def create_users(users):
