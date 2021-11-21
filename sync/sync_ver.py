@@ -9,7 +9,7 @@ URL = 'https://jsonplaceholder.typicode.com'
 
 
 def get_data(url: str = '') -> requests.Response:
-    r = requests.get(url)
+    return requests.get(url)
 
 
 def create_users(users):
