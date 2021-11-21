@@ -8,7 +8,7 @@ from db.models import User, Album, Photo, Todo, Post, Comment, Base
 URL = 'https://jsonplaceholder.typicode.com'
 
 
-def get_data(url: str = ''):
+def get_data(url: str = '') -> requests.Response:
     try:
         r = requests.get(url)
         return r
@@ -16,7 +16,7 @@ def get_data(url: str = ''):
         print(f'{ex}: Неизвестная ошибка загрузки.')
 
 
-def create_users():
+def create_users(users):
     users_lst = [User(
         id=user.get('id'),
         name=user.get('name'),
@@ -26,62 +26,61 @@ def create_users():
         phone=user.get('phone'),
         website=user.get('website'),
         company=user.get('company')
-    ) for user in get_data(URL + '/users').json()
+    ) for user in users
     ]
-
     return users_lst
 
 
-def create_todos():
-    todos = [Todo(
+def create_todos(todos):
+    todos_lst = [Todo(
         title=todo.get('title'),
         completed=todo.get('completed'),
         userId=todo.get('userId')
-    ) for todo in get_data(URL + '/todos').json()
+    ) for todo in todos
     ]
-    return todos
+    return todos_lst
 
 
-def create_albums():
-    albums = [Album(
+def create_albums(albums):
+    albums_lst = [Album(
         id=album.get('id'),
         title=album.get('title'),
         userId=album.get('userId')
-    ) for album in get_data(URL + '/albums').json()
+    ) for album in albums
     ]
-    return albums
+    return albums_lst
 
 
-def create_photos():
-    photos = [Photo(
+def create_photos(photos):
+    photos_lst = [Photo(
         title=photo.get('title'),
         url=photo.get('url'),
         thumbUrl=photo.get('thumbUrl'),
         albumId=photo.get('albumId')
-    ) for photo in get_data(URL + '/photos').json()
+    ) for photo in photos
     ]
-    return photos
+    return photos_lst
 
 
-def create_posts():
-    posts = [Post(
+def create_posts(posts):
+    posts_lst = [Post(
         id=post.get('id'),
         title=post.get('title'),
         userId=post.get('userId'),
-    ) for post in get_data(URL + '/posts').json()
+    ) for post in posts
     ]
-    return posts
+    return posts_lst
 
 
-def create_comments():
-    comments = [Comment(
+def create_comments(comments):
+    comments_lst = [Comment(
         name=comment.get('name'),
         email=comment.get('email'),
         body=comment.get('body'),
         postId=comment.get('postId')
-    ) for comment in get_data(URL + '/comments').json()
+    ) for comment in comments
     ]
-    return comments
+    return comments_lst
 
 
 def main():
@@ -93,15 +92,17 @@ def main():
     Session = sessionmaker(bind=engine)
 
     session = Session()
-
-    session.add_all(create_users())
-
-    session.add_all(create_todos())
-    session.add_all(create_albums())
-    session.add_all(create_posts())
-
-    session.add_all(create_photos())
-    session.add_all(create_comments())
+    urls = {
+        '/users': create_users,
+        '/todos': create_todos,
+        '/albums': create_albums,
+        '/posts': create_posts,
+        '/photos': create_photos,
+        '/comments': create_comments,
+    }
+    for key, value in urls.items():
+        raw_data = get_data(URL + key).json()
+        session.add_all(value(raw_data))
 
     session.commit()
     session.close()
